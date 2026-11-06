@@ -694,3 +694,9 @@ AI Agents Bootcamp 2026 Final Project
 
 FinSight is an educational research prototype and should not be treated as financial or investment advice. Users should independently verify financial information before making decisions.
 
+## Demo
+
+Example qualitative SEC research query using FinSight's 10-K retrieval pipeline:
+
+![FinSight demo](docs/finsight-demo.png)
+
