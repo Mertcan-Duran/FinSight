@@ -1,11 +1,13 @@
+import re
 from typing import List
 
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-from src.model_factory import get_chat_model
 from pydantic import BaseModel, Field
+
+from src.model_factory import get_chat_model
 
 
 class CriticResult(BaseModel):
@@ -39,30 +41,118 @@ class CriticResult(BaseModel):
     )
 
     issues: List[str] = Field(
-        default_factory=list,
         description=(
             "Specific factual or source-consistency "
-            "problems found in the draft answer."
-        ),
+            "problems found in the draft answer. "
+            "Return an empty list when there are no issues."
+        )
     )
 
     revision_instructions: List[str] = Field(
-        default_factory=list,
         description=(
             "Concrete instructions for correcting "
-            "factual or source-consistency problems."
-        ),
+            "factual or source-consistency problems. "
+            "Return an empty list when no revision is needed."
+        )
     )
 
 
 critic_model = get_chat_model()
 
 
-structured_critic = (
-    critic_model.with_structured_output(
-        CriticResult
+def _extract_bool(
+    text: str,
+    field: str,
+) -> bool:
+    """
+    Extracts a boolean field from the critic's
+    deterministic text response.
+    """
+
+    match = re.search(
+        rf"(?im)^{field}\s*=\s*(true|false)\s*$",
+        text,
     )
-)
+
+    if not match:
+        raise ValueError(
+            f"Missing critic field: {field}"
+        )
+
+    return (
+        match.group(1).lower()
+        == "true"
+    )
+
+
+def _extract_list(
+    text: str,
+    field: str,
+) -> List[str]:
+    """
+    Extracts a list-like field from the critic response.
+
+    Multiple items are separated using ||.
+    """
+
+    match = re.search(
+        rf"(?im)^{field}\s*=\s*(.*)$",
+        text,
+    )
+
+    if not match:
+        return []
+
+    value = match.group(1).strip()
+
+    if value.upper() in {
+        "NONE",
+        "[]",
+        "",
+    }:
+        return []
+
+    return [
+        item.strip()
+        for item in value.split("||")
+        if item.strip()
+    ]
+
+
+def _parse_critic_response(
+    text: str,
+) -> CriticResult:
+    """
+    Converts the critic's deterministic six-line
+    text response into a CriticResult object.
+    """
+
+    return CriticResult(
+        approved=_extract_bool(
+            text,
+            "APPROVED",
+        ),
+        grounded=_extract_bool(
+            text,
+            "GROUNDED",
+        ),
+        relevant=_extract_bool(
+            text,
+            "RELEVANT",
+        ),
+        source_consistent=_extract_bool(
+            text,
+            "SOURCE_CONSISTENT",
+        ),
+        issues=_extract_list(
+            text,
+            "ISSUES",
+        ),
+        revision_instructions=_extract_list(
+            text,
+            "REVISION_INSTRUCTIONS",
+        ),
+    )
 
 
 def review_answer(
@@ -246,7 +336,8 @@ Evaluate the draft using these rules:
     Incorrect instruction:
     "Do not describe the cost increase as a risk."
 
-IMPORTANT OUTPUT RULES:
+
+IMPORTANT EVALUATION RULES
 
 - issues must contain ONLY real factual, grounding,
   attribution, scope, causal, or modality problems.
@@ -268,6 +359,46 @@ IMPORTANT OUTPUT RULES:
   approved = True
   issues = []
   revision_instructions = []
+
+
+CRITICAL OUTPUT FORMAT
+
+Return EXACTLY these six lines:
+
+APPROVED=true
+GROUNDED=true
+RELEVANT=true
+SOURCE_CONSISTENT=true
+ISSUES=NONE
+REVISION_INSTRUCTIONS=NONE
+
+Use only true or false for the first four fields.
+
+If there are multiple issues, separate them with:
+
+||
+
+Example:
+
+ISSUES=First issue||Second issue
+
+If there are no issues, write:
+
+ISSUES=NONE
+
+If there are no revision instructions, write:
+
+REVISION_INSTRUCTIONS=NONE
+
+Do not use JSON.
+
+Do not use Markdown.
+
+Do not use bullets.
+
+Do not use code fences.
+
+Do not add any text before or after these six lines.
 """
 
     review_request = f"""
@@ -286,7 +417,7 @@ SUPPLIED EVIDENCE:
 {evidence}
 """
 
-    result = structured_critic.invoke(
+    critic_response = critic_model.invoke(
         [
             SystemMessage(
                 content=system_prompt
@@ -296,6 +427,34 @@ SUPPLIED EVIDENCE:
             ),
         ]
     )
+
+    try:
+        result = _parse_critic_response(
+            critic_response.content
+        )
+
+    except ValueError:
+        # Fail closed if the critic response cannot
+        # be parsed reliably.
+        result = CriticResult(
+            approved=False,
+            grounded=False,
+            relevant=True,
+            source_consistent=False,
+            issues=[
+                (
+                    "The critic response could not "
+                    "be parsed reliably."
+                )
+            ],
+            revision_instructions=[
+                (
+                    "Rewrite the answer using only "
+                    "explicitly supported SEC evidence "
+                    "and preserve source wording."
+                )
+            ],
+        )
 
     # --------------------------------------------------
     # Deterministic critic consistency
@@ -307,9 +466,9 @@ SUPPLIED EVIDENCE:
         and result.source_consistent
     )
 
-    # If all substantive checks pass, approve the answer.
-    # Ignore accidental commentary that the small model
-    # may have placed in issues or revision_instructions.
+    # If all substantive checks pass, approve the
+    # answer. Ignore accidental text that the small
+    # model may have placed in the issue fields.
     if checks_pass:
         result.approved = True
         result.issues = []
@@ -319,10 +478,10 @@ SUPPLIED EVIDENCE:
 
     # If any substantive check fails, reject the answer.
     result.approved = False
-    # Remove critic feedback that tries to reinterpret
-# whether a supported SEC statement is "a risk" or
-# "a fact". The critic should only check fidelity.
 
+    # Remove critic feedback that tries to reinterpret
+    # whether a supported SEC statement is "a risk"
+    # or "a fact". The critic should only check fidelity.
     invalid_reclassification_phrases = (
         "not a risk",
         "fact (not a risk)",
@@ -335,7 +494,8 @@ SUPPLIED EVIDENCE:
         for issue in result.issues
         if not any(
             phrase in issue.lower()
-            for phrase in invalid_reclassification_phrases
+            for phrase
+            in invalid_reclassification_phrases
         )
     ]
 
@@ -345,9 +505,11 @@ SUPPLIED EVIDENCE:
         in result.revision_instructions
         if not any(
             phrase in instruction.lower()
-            for phrase in invalid_reclassification_phrases
+            for phrase
+            in invalid_reclassification_phrases
         )
     ]
+
     # Grounding and source consistency should fail
     # together when source meaning is not preserved.
     if not result.source_consistent:
