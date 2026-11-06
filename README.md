@@ -10,7 +10,7 @@ FinSight answers company research questions using authoritative SEC EDGAR data i
 
 ## Links
 
-- **GitHub Repository:** `ADD_PUBLIC_GITHUB_URL`
+- **GitHub Repository:** `https://github.com/Mertcan-Duran/FinSight`
 - **Technical Article:** `ADD_MEDIUM_OR_TVT_URL`
 - **Demo:** `ADD_DEMO_URL_IF_AVAILABLE`
 
@@ -348,7 +348,7 @@ Secrets should never be written to traces.
 ### 1. Clone the repository
 
 ```bash
-git clone ADD_PUBLIC_GITHUB_URL
+git clone https://github.com/Mertcan-Duran/FinSight
 cd FinSight
 ```
 
