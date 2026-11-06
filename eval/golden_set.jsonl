@@ -1,0 +1,16 @@
+{"id":"revenue_aapl_latest","question":"What is Apple's latest annual revenue?","expected_tool":"get_latest_annual_revenue","expected_value":478834000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"net_income_aapl_latest","question":"What is Apple's latest annual net income?","expected_tool":"get_latest_annual_net_income","expected_value":132175000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"total_assets_aapl_latest","question":"What are Apple's latest total assets?","expected_tool":"get_latest_total_assets","expected_value":404548000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"company_info_aapl","question":"What is Apple's SEC company information?","expected_tool":"get_company_info","expected_company":"Apple Inc.","expected_cik":"0000320193"}
+{"id":"company_info_nvda","question":"What is NVIDIA's SEC company information?","expected_tool":"get_company_info","expected_company":"NVIDIA CORP","expected_cik":"0001045810"}
+{"id":"revenue_nvda_latest","question":"What is NVIDIA's latest annual revenue?","expected_tool":"get_latest_annual_revenue","expected_value":215938000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"net_income_nvda_latest","question":"What is NVIDIA's latest annual net income?","expected_tool":"get_latest_annual_net_income","expected_value":120067000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"total_assets_nvda_latest","question":"What are NVIDIA's latest total assets?","expected_tool":"get_latest_total_assets","expected_value":206803000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"company_info_msft","question":"What is Microsoft's SEC company information?","expected_tool":"get_company_info","expected_company":"MICROSOFT CORP","expected_cik":"0000789019"}
+{"id":"revenue_msft_latest","question":"What is Microsoft's latest annual revenue?","expected_tool":"get_latest_annual_revenue","expected_value":331839000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"net_income_msft_latest","question":"What is Microsoft's latest annual net income?","expected_tool":"get_latest_annual_net_income","expected_value":133749000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"total_assets_msft_latest","question":"What are Microsoft's latest total assets?","expected_tool":"get_latest_total_assets","expected_value":758376000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"revenue_msft_paraphrase","question":"How much revenue did Microsoft report in its most recent fiscal year?","expected_tool":"get_latest_annual_revenue","expected_value":331839000000,"expected_fiscal_year":2026,"expected_currency":"USD"}
+{"id":"rag_msft_ai_risks","question":"What risks does Microsoft discuss regarding artificial intelligence?","expected_tool":"search_latest_10k"}
+{"id":"rag_nvda_supply_chain","question":"What supply chain risks does NVIDIA discuss in its latest 10-K?","expected_tool":"search_latest_10k"}
+{"id":"rag_aapl_supply_chain","question":"What supply chain risks does Apple discuss in its latest 10-K?","expected_tool":"search_latest_10k"}
