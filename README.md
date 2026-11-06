@@ -11,7 +11,7 @@ FinSight answers company research questions using authoritative SEC EDGAR data i
 ## Links
 
 - **GitHub Repository:** `https://github.com/Mertcan-Duran/FinSight`
-- **Technical Article:** `ADD_MEDIUM_OR_TVT_URL`
+- **Technical Article:** `https://medium.com/@mertcanduran05/building-finsight-a-grounded-ai-agent-for-sec-financial-research-7c9f8aeba7b8`
 - **Demo:** `ADD_DEMO_URL_IF_AVAILABLE`
 
 ---
@@ -693,3 +693,4 @@ AI Agents Bootcamp 2026 Final Project
 ## Disclaimer
 
 FinSight is an educational research prototype and should not be treated as financial or investment advice. Users should independently verify financial information before making decisions.
+
