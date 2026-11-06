@@ -12,7 +12,7 @@ FinSight answers company research questions using authoritative SEC EDGAR data i
 
 - **GitHub Repository:** `https://github.com/Mertcan-Duran/FinSight`
 - **Technical Article:** `https://medium.com/@mertcanduran05/building-finsight-a-grounded-ai-agent-for-sec-financial-research-7c9f8aeba7b8`
-- **Demo:** Local Streamlit demo available; see the screenshot below.
+- **Demo:** https://finsight-sec-research.streamlit.app/
 
 ---
 
@@ -699,5 +699,6 @@ FinSight is an educational research prototype and should not be treated as finan
 Example qualitative SEC research query using FinSight's 10-K retrieval pipeline:
 
 ![FinSight demo](docs/finsight-demo.png)
+
 
 
