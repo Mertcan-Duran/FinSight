@@ -4,7 +4,7 @@ from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-from langchain_ollama import ChatOllama
+from src.model_factory import get_chat_model
 from pydantic import BaseModel, Field
 
 
@@ -55,10 +55,7 @@ class CriticResult(BaseModel):
     )
 
 
-critic_model = ChatOllama(
-    model="qwen3:4b",
-    temperature=0,
-)
+critic_model = get_chat_model()
 
 
 structured_critic = (

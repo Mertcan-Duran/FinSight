@@ -7,10 +7,7 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
 )
-from langchain_google_genai import (
-    ChatGoogleGenerativeAI,
-)
-from langchain_ollama import ChatOllama
+from src.model_factory import get_chat_model
 
 from src.agents.critic_agent import (
     review_answer,
@@ -31,7 +28,7 @@ load_dotenv()
 
 
 MAX_STEPS = 5
-MODEL_PROVIDER = "ollama"
+
 
 
 tools = [
@@ -48,24 +45,8 @@ tool_map = {
     for tool in tools
 }
 
+active_model = get_chat_model()
 
-if MODEL_PROVIDER == "ollama":
-    active_model = ChatOllama(
-        model="qwen3:4b",
-        temperature=0,
-    )
-
-elif MODEL_PROVIDER == "gemini":
-    active_model = ChatGoogleGenerativeAI(
-        model="gemini-3.8-flash",
-        temperature=0,
-    )
-
-else:
-    raise ValueError(
-        f"Unsupported MODEL_PROVIDER: "
-        f"{MODEL_PROVIDER}"
-    )
 
 
 model_with_tools = active_model.bind_tools(
@@ -216,6 +197,32 @@ def limit_numbered_items(
         :cutoff_position
     ].rstrip()
 
+def remove_internal_retrieval_markers(
+    text: str,
+) -> str:
+    """
+    Removes internal RAG metadata such as chunk IDs
+    from user-facing answers.
+    """
+
+    cleaned = re.sub(
+        r"\s*\(?\bchunk\s+\d+\b\)?",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    cleaned = re.sub(
+        r"[ \t]+([.,;:])",
+        r"\1",
+        cleaned,
+    )
+    cleaned = re.sub(
+    r"\.{2,}",
+    ".",
+    cleaned,
+)
+    return cleaned.strip()
 
 def run_financial_agent(
     user_question: str,
@@ -802,6 +809,11 @@ When using retrieved 10-K evidence:
                     )
                 )
 
+                final_answer = (
+                    remove_internal_retrieval_markers(
+                        final_answer
+                    )
+                )
                 if result.get(
                     "results"
                 ):
